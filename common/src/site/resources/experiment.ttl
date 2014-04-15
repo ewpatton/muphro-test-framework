@@ -1,0 +1,225 @@
+# -*- mode: n3; n3-indent-level: 2; -*-
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix doap:   <http://usefulinc.com/ns/doap#> .
+@prefix muphro: <http://www.evanpatton.com/ns/muphro#> .
+@prefix prov:   <http://www.w3.org/ns/prov#> .
+@prefix foaf:   <http://xmlns.com/foaf/0.1/> .
+@prefix dc:     <http://purl.org/dc/terms/> .
+@prefix time:   <http://www.w3.org/2006/time#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix evan:   <http://www.evanpatton.com/evan.rdf#> .
+@prefix :       <http://www.evanpatton.com/ns/experiment#> .
+@prefix vann:   <http://purl.org/vocab/vann/> .
+@prefix units:  <http://sweet.jpl.nasa.gov/2.3/reprSciUnits.owl#> .
+
+# Ontology
+: a owl:Ontology ;
+  rdfs:label "Muphro Experiment Ontology"@en ;
+  vann:preferredNamespacePrefix "exp" ;
+  doap:license <http://creativecommons.org/licenses/by-sa/4.0/> ;
+  rdfs:comment
+"""The Muphro Experiment Ontology describes the classes and properties used for
+declaratively describing experiments for the Muphro Reasoner Power Profiler
+platform.
+
+Conceptually, the ontology is broken down into a few key items. Experiments, Condition Groups, Conditions, Operations, Executions, and Variables.
+
+Experiments are the root object modelled by this ontology. An Experiment instance is composed of one ore more condition groups and is designed to measure one or more dependent variables. When an Experiment is executed, the framework will capture the execution provenance as well as create a signed graph containing the experiment and its provenance signed with the executor's WebID key.
+
+Condition Groups are collections of one or more independent variables that varied to generate different conditions in the experiment execution.
+
+Conditions are specific configurations of values within each named condition group for an experiment. Conditions are repeatedly run based on the value of the exp:trials property.
+
+Operations are individual steps to be executed to complete a condtion from beginning to end. In the event that an operation fails, the condition will be marked as a failure to complete.
+
+Executions are the equivalent of PROV-O activities. They descibe the execution of a set of operation entities on resource entities by a particular actor (the experimental platform), acting on behalf of a user agent (represented by a WebID). Executions generate result entities that include the power readings, read rates, metadata about the target device(s), as well as variables for each condition in the experiment. From the execution trace, any analysis should be able to be re-performed by the platform.
+
+Variables are either nominal, ordinal, or ratio. Each condition group acts as a variable. Dependent variables are named on the experiment and are aggregated in the final dataset by condition.
+"""@en .
+
+# Classes
+:Experiment a owl:Class ;
+  rdfs:label "Experiment" ;
+  rdfs:comment
+"An experiment the evaluation of one or more expr:Condition."@en ;
+  rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty :hasCondition ;
+    owl:minCardinality "1"^^xsd:nonNegativeInteger ] ;
+  rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty :name ;
+    owl:minCardinality "1"^^xsd:nonNegativeInteger ] ;
+.
+
+:Condition a owl:Class ;
+  rdfs:label "Condition"@en .
+
+:ConditionGroup a owl:Class ;
+  rdfs:label "Condition Group"@en .
+
+:ConditionFillStrategy a owl:Class ;
+  rdfs:label "Condition Fill Strategy"@en ;
+  rdfs:comment """
+Specifies what strategy to use when more than one exp:hasConditions is specified for an experiment in order to evaluate the experiment. exp:CrossJoin, for example, will create a Cartesian product of all condition groups and evaluate each element in the resulting set. exp:Paired requires that all condition groups with nominal values have the same number of elements and so all of the first elements in each nominal list will be put into one execution, all of the second elements in a second execution, etc.
+"""@en .
+
+:Operation a owl:Class ;
+  rdfs:subClassOf prov:Entity ;
+  rdfs:label "Operation" .
+
+:Variable a owl:Class ;
+  rdfs:label "Variable"@en ;
+  rdfs:comment ""@en ;
+.
+
+:DependentVariable a owl:Class ;
+  rdfs:subClassOf :Variable ;
+  rdfs:label "Dependent Variable"@en ;
+  rdfs:comment ""@en ;
+.
+
+:Agent a owl:Class ;
+  rdfs:subClassOf prov:Agent, foaf:Agent ;
+  rdfs:label "Agent" .
+
+:Parameter a owl:Class ;
+  rdfs:label "Parameter" ;
+  rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty :name ;
+    owl:minCardinality "1"^^xsd:nonNegativeInteger ] .
+
+:Reasoner a owl:Class ;
+  rdfs:label "Reasoner" ;
+  rdfs:subClassOf
+    [ a owl:Restriction ;
+      owl:onProperty :interfaceClass ;
+      owl:cardinality "1"^^xsd:nonNegativeInteger ] ;
+.
+
+:Ontology a owl:Class ;
+  rdfs:label "Ontology" ;
+  owl:equivalentClass
+    [ a owl:Restriction ;
+    owl:onProperty :ontology ;
+    owl:minCardinality "1"^^xsd:nonNegativeInteger ] .
+
+:Dataset a owl:Class ;
+  rdfs:label "Dataset" ;
+  owl:equivalentClass
+    [ a owl:Restriction ;
+      owl:onProperty :dataset ;
+      owl:minCardinality "1"^^xsd:nonNegativeInteger ] .
+
+:QueryOperation a owl:Class ;
+  rdfs:label "Query" ;
+  rdfs:subClassOf
+    :Operation ,
+    [ a owl:Restriction ;
+      owl:onProperty :queryText ;
+      owl:minCardinality "1"^^xsd:nonNegativeInteger ] ,
+    [ a owl:Restriction ;
+      owl:onProperty :queryUri ;
+      owl:minCardinality "0"^^xsd:nonNegativeInteger ] .
+
+:OntologyDatasetQueryOperation a owl:Class ;
+  owl:intersectionOf ( :Ontology :Dataset :QueryOperation ) .
+.
+
+:SequenceOperation a owl:Class ;
+  rdfs:label "Sequence Operation" ;
+  rdfs:comment "Performs a sequence of executions in serial order as prescribed" ;
+  rdfs:subClassOf
+    [ a owl:Restriction ;
+      owl:onProperty :operations ;
+      owl:minCardinality "1"^^xsd:nonNegativeInteger ] ;
+.
+
+:BagOperation a owl:Class ;
+  rdfs:label "Bag Operation" ;
+  rdfs:comment "Performs a sequence of executions in serial, but randomized by choosing without replacement until all executions have been performed." ;
+  rdfs:subClassOf
+    [ a owl:Restriction ;
+      owl:onProperty :operations ;
+      owl:minCardinality "1"^^xsd:nonNegativeInteger ] ;
+.
+
+:ParallelOperation a owl:Class ;
+  rdfs:label "Parallel Operation" ;
+  rdfs:comment "Performs a set of executions in parallel, constrained to the number of threads specified." ;
+  rdfs:subClassOf
+    [ a owl:Restriction ;
+      owl:onProperty :operations ;
+      owl:cardinality "1"^^xsd:nonNegativeInteger ] ,
+    [ a owl:Restriction ;
+      owl:onProperty :threads ;
+      owl:cardinality "1"^^xsd:nonNegativeInteger ] ;
+.
+
+# Properties
+:name a owl:AnnotationProperty ;
+  rdfs:label "name"@en ;
+  rdfs:subClassOf rdfs:label .
+
+:version a owl:AnnotationProperty ;
+  rdfs:label "version"@en ;
+  rdfs:comment """
+Version is an identifier using Semantic Versioning to tag each iteration of an experiment so that changes in the experiment or its results can be tied back to a particular instance of the experiment. See also PROV-O.
+"""@en ;
+.
+
+:operations a owl:ObjectProperty ;
+  rdfs:range rdf:List ;
+  rdfs:label "operations"@en ;
+  rdfs:comment """
+Specifies a list of operations for a particular operation group. Note, although this is an rdf:List in the RDF model, the actual ordering of the operations in the group are dependent on the class of the group. For example, the exp:ParallelOperation will execute as many of the elements in the list in parallel as possible."""@en ;
+.
+
+:hasConditions a owl:ObjectProperty ;
+  rdfs:label "has conditions"@en ;
+  rdfs:comment """
+Specifies a set of condition groups that are tested in this experiment. See also exp:conditionFillStrategy
+"""@en ;
+  rdfs:range :ConditionGroup ;
+.
+
+:conditionFillStrategy a owl:ObjectProperty ;
+  rdfs:label "condition fill strategy"@en ;
+  rdfs:comment """
+"""@en ;
+  rdfs:range :ConditionFillStrategy
+
+
+# Individuals
+:CrossJoin a :ConditionFillStrategy ;
+  rdfs:label "Cross Join fill strategy"@en ;
+  rdfs:comment """
+Cross Join fill strategy will create a matrix that is the Cartesian product of all of the condition groups for the experiment. This can be very computationally expensive, e.g. if you have 3 condition groups with 5 conditions each then this will generate 125 experimental evaluations that must be performed.
+"""@en ;
+.
+
+:Paired a :ConditionFillStrategy ;
+  rdfs:label "Paired fill strategy"@en ;
+  rdfs:comment """
+The Paired fill strategy will create N executions where N is the length of the nominal values field of all condition groups declaring that property with a non-empty list. The Nth element of each condition group will be used to form an execution.
+"""@en ;
+.
+
+:ExecutionInterval a :DependentVariable ;
+  rdfs:label ""@en ;
+  rdfs:comment ""@en ;
+  :unit units:second .
+
+:MaxPowerConsumption a :DependentVariable ;
+  rdfs:label "Maximum Power Consumption"@en ;
+  rdfs:comment "Identifies the maximum observed power consumption during the experimental condition's execution."@en ;
+  :unit units:watt .
+
+:AveragePowerConsumption a :DependentVariable ;
+  rdfs:label "Average Power Consumption"@en ;
+  rdfs:comment "Identifies the average observed power consumption over the course of the experimental condition's execution."@en ;
+  :unit units:watt .
+

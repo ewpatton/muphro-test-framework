@@ -1,0 +1,55 @@
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix doap:   <http://usefulinc.com/ns/doap#> .
+@prefix muphro: <http://www.evanpatton.com/ns/muphro#> .
+@prefix prov:   <http://www.w3.org/ns/prov#> .
+@prefix foaf:   <http://xmlns.com/foaf/0.1/> .
+@prefix dc:     <http://purl.org/dc/terms/> .
+@prefix time:   <http://www.w3.org/2006/time#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix evan:   <http://www.evanpatton.com/evan.rdf#> .
+
+<> a foaf:Document ;
+  dc:creator evan:me ;
+  doap:license <https://creativecommons.org/licenses/by-sa/4.0/> .
+
+muphro:Muphro a doap:Project, prov:Entity ;
+  rdfs:label "Muphro Reasoner & Evaluation Framework for Mobile Devices"@en ;
+  doap:name "Muphro Reasoner & Evaluation Framework for Mobile Devices"@en ;
+  dc:description """The Muphro Reasoner & Evaluation Framework for Mobile Devices is a software suite designed to support OWL 2 RL expressivity reasoning on mobile devices as well as evaluate ontologies and instance data for power performance and identify possible bottlenecks in application queries that could result in poor battery life."""@en ;
+  doap:developer evan:me ;
+  doap:created "2011-03-01"^^xsd:date ;
+  doap:homepage <http://www.evanpatton.com/research/muphro/> ;
+  doap:platform "Android", "iOS" ;
+  doap:programming-language <http://dbpedia.org/resource/Bash_(Unix_shell)>,
+    <http://dbpedia.org/resource/C_(programming_language)>,
+    <http://dbpedia.org/resource/Java_(programming_language)>,
+    <http://dbpedia.org/resource/Objective-C> ;
+  doap:license <http://dbpedia.org/resource/GNU_General_Public_License> ;
+  doap:repository muphro:develop, muphro:master ;
+  doap:release muphro:v0.1.0 ;
+  prov:wasAssociatedWith evan:me .
+
+muphro:develop a doap:GitBranch, prov:Entity ;
+  doap:name "develop" ;
+  doap:anon-root <https://github.com/ewpatton/muphro.git> ;
+  doap:browse <https://github.com/ewpatton/muphro/tree/develop> ;
+  doap:bug-database <https://github.com/ewpatton/muphro/issues> ;
+  doap:location <ssh://git@github.com/ewpatton/muphro> ;
+  prov:wasDerivedFrom muphro:Muphro ;
+  .
+
+muphro:master a doap:GitBranch, prov:Entity ;
+  doap:name "master" ;
+  doap:anon-root <https://github.com/ewpatton/muphro.git> ;
+  doap:browse <https://github.com/ewpatton/muphro> ;
+  doap:bug-database <https://github.com/ewpatton/muphro/issues> ;
+  doap:location <ssh://git@github.com/ewpatton/muphro> ;
+  prov:wasDerivedFrom muphro:Muphro ;
+  .
+
+muphro:v0.1.0 a doap:Version, prov:Entity ;
+  prov:specializationOf muphro:Muphro ;
+  doap:revision "v0.1.0" ;
+  .
